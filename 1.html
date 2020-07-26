@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>break_wall</title>
+    
+</head>
+    <style>
+        * { padding: 0; margin:0;}
+        canvas {background: #eee; display: block; margin: 0 auto;  }
+    </style>
+<body>
+
+    <canvas id="myCanvas" width="480" height="320"></canvas>
+    
+    
+    <button id = "button2" onclick = "speedReset();">속도 초기화</button>
+    <button id = "button1" onclick = "speedUp(1);">속도 증가</button>
+    <button id = "button1" onclick = "speedDown(1);">속도 감소</button>
+    <button id = "button1" onclick = "ballStop();">공 멈추기</button>
+    
+
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    //ball position
+    var x = canvas.width/2;
+    var y = canvas.height/2;
+    //ball style
+    
+    var dx = 1;
+    var dy = -1;   
+    var ballRadius = 10;
+
+    var ddx = 0 ;
+
+    var paddleHeight = 10;
+    var paddleWidth = 750;
+    var paddleX = (canvas.width-paddleWidth)/2;
+
+    var rightPressed = false;
+    var leftPressed = false;
+
+    var score = 0;
+    var scoreN;
+
+    
+
+    var brickRowCount = 3;
+    var brickColumnCount = 5;
+    var brickWidth = 75;
+    var brickHeight = 20;
+    var brickPadding = 10;
+    var brickOffsetTop = 30;
+    var brickOffsetLeft = 30;
+    var fps = 10;
+
+    var bricks = [];
+
+    var brickX = (c*(brickWidth+brickPadding))+brickOffsetLeft;
+    var brickY = (r*(brickHeight+brickPadding))+brickOffsetTop;
+    for(var c=0; c<brickColumnCount; c++){
+        bricks[c] = [];
+        for(var r=0; r<brickRowCount; r++){
+            bricks[c][r] = { x: 0, y: 0, status : 1};
+        }
+
+    }
+    function drawBricks() {
+    for(var c=0; c<brickColumnCount; c++) {
+        for(var r=0; r<brickRowCount; r++) {
+            if(bricks[c][r].status == 1) {
+                var brickX = (c*(brickWidth+brickPadding))+brickOffsetLeft;
+                var brickY = (r*(brickHeight+brickPadding))+brickOffsetTop;
+                bricks[c][r].x = brickX;
+                bricks[c][r].y = brickY;
+                ctx.beginPath();
+                ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                ctx.fillStyle = "#0095DD";
+                ctx.fill();
+                ctx.closePath();
+                }
+            }
+        }
+    }
+    function speedSet(){
+        for (scoreN = 0;scoreN<9999999; scoreN+=1){ 
+                if (score == scoreN){
+                speedUp(0.002);
+                }
+                
+        }
+    }
+        
+    function drawBall(){
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+        if(y + dy - ballRadius < 0){
+            dy = -dy;
+        }
+
+        else if( y + ballRadius > canvas.height-paddleHeight-10){
+            if(x > paddleX && x < paddleX + paddleWidth){
+                dy = -dy;
+                score += 1;
+
+                speedSet();
+
+                
+            }
+            else if (y + ballRadius >= canvas.height){
+            alert("GAME OVER \n totlal score:" + score);
+            x = canvas.width/2;
+            y = canvas.height/2;
+            document.location.reload(true);
+
+            }
+        }
+        if(x + dx - ballRadius < 0 || x + dx + ballRadius > canvas.width){
+            dx = -dx;
+        }
+        if(x < 0 && x >canvas.height){
+            x = canvas.width/2;
+            y = canvas.height/2;
+        }
+            
+
+
+    } 
+    function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(paddleX, canvas.height-paddleHeight-10, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+    
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBall();
+        drawPaddle();
+        //drawBricks();
+        //collisionDetection();
+        drawScore();
+        //speedUp(0.0001);
+        drawSpeed()
+        x += dx;
+        y += dy;
+
+        if(rightPressed){
+            paddleX += 3;
+        }
+        if(leftPressed){
+            paddleX -= 3;
+        
+        }
+        if(rightPressed && paddleX < canvas.width-paddleWidth){
+            paddleX += 3;
+        }
+        else if(leftPressed && paddleX > 0) {
+            paddleX -= 3;
+        }
+
+
+    }
+   
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    
+    function keyDownHandler(e) {
+        if(e.keyCode == 39) {
+            rightPressed = true;
+        }
+        else if(e.keyCode == 37) {
+            leftPressed = true;
+        }
+    }
+
+    
+    function keyUpHandler(e) {
+        if(e.keyCode == 39) {
+            rightPressed = false;
+        }
+        else if(e.keyCode == 37) {
+            leftPressed = false;
+        }
+    }
+    
+    
+    setInterval(draw, 1);
+
+
+
+    function speedUp(speed){
+        if (dx > 0){
+            dx += speed;
+        } 
+        if (dx < 0){
+            dx -= speed;
+        }
+        if (dy > 0){
+            dy += speed;
+        }
+        if (dy < 0){
+            dy -= speed;
+        }
+        if (dx == 0 && dy == 0){
+            dx += speed;
+            dy += speed;
+        }
+ 
+    }
+    function speedDown(speeD){
+        if (dx > 0){
+            dx -= speeD;
+        } 
+        if (dx < 0){
+            dx += speeD;
+        }
+        if (dy > 0){
+            dy -= speeD;
+        }
+        if (dy < 0){
+            dy += speeD;
+        }
+        if (dy == -dy && dx == -dy){
+            dx = 0;
+            dy = 0;
+        }
+        
+
+        
+ 
+    
+
+    }
+    function speedReset(){
+        dx = 2;
+        dy = -2;
+    }
+    function ballStop(){
+        dx = 0;
+        dy = 0;
+    }
+    function collisionDetection() {
+    for(var c=0; c<brickColumnCount; c++) {
+        for(var r=0; r<brickRowCount; r++) {
+            var b = bricks[c][r];
+            if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+                dy = -dy;
+                score += 1;
+                speedSet();
+
+                }
+            }
+        }
+    }
+
+    function drawScore() {
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#000000";
+    ctx.fillText("Score: "+score, 8, 20);
+}
+    function drawSpeed() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#000000"
+        ctx.fillText("Speed: "+ ddx , 8, 40);
+        if (dx > 0){
+            ddx = dx;
+        }
+        if (ddx < 0){
+            ddx = -dx;
+        }
+        
+        
+        
+        
+    }
+
+
+</script>
+</body>
+</html>
